@@ -2,7 +2,7 @@
     <body>
         <h1 id="mainText">Cyber Security AI</h1>
 
-        <h2>SQL Injection and XSS</h2>
+        <h2>SQL Injection and XSS<button id="togglesafeinput">Click to turn off</button></h2>
         <form>
             <input placeholder="Username" id="usernameinput">
             <input placeholder="Password" id="passwordinput">
@@ -18,7 +18,7 @@
         <p id="currentid">Currently logged in: </p>
 
         <h2>Fixed Authentication</h2>
-        <p>Current User Password: </p>
+        <p id="passworddisplay">Current User Password: </p>
         <button id="showpassword">Click for password</button>
     </body>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>

@@ -6,26 +6,22 @@ var ipcode_cached=ipcode;
 fetch('https://ipgeolocation.abstractapi.com/v1/?api_key=900a501113984f96a55df3e0f2a75e99') // This returns information on the client
   .then(response => response.json())
   .then(data => {
-    ipcode = data.ip_address.replace(".", "").replace(".", "").replace(".", "")
-    fetch("http://localhost:8000/users")
+    ipcode = data.ip_address.replace(".", "").replace(".", "").replace(".", "")     // Based on the ip address without any periods
+    fetch(`http://localhost:8000/getipaccount?ipcode=${ipcode}`)
         .then(getResponse => getResponse.json())
         .then(getData => {
-            console.log(JSON.stringify(getData).search(ipcode))
-            if(JSON.stringify(getData).search(ipcode) == -1) {
-                console.log("is a new user")
+            if(getData[0] == false) {   // If this is a new machine add the machine to the databaste
                 newMachine = true
                 const Http = new XMLHttpRequest();
                 const url=`http://localhost:8000/pageactivated?ip=${JSON.stringify(data.ip_address)}&ipcode=${ipcode}`;
                 localStorage.setItem("machine-id", ipcode)
                 Http.open("POST", url);
                 Http.send();
-            } else {
-
             }
         })
   });
 
-function addUser(username, password) {
+function addUser(username, password) {  // Add account to machine
     const Http = new XMLHttpRequest();
     const url=`http://localhost:8000/adduser?username=${username}&password=${password}&ipcode=${ipcode}`;
     localStorage.setItem("current-user", username)
@@ -33,16 +29,16 @@ function addUser(username, password) {
     Http.send();
 }
 
-function getUser(callback) {
-    console.log(ipcode)
+function getUser(callback) {    // Returns the users that are registered with the machine id
+    let x = 0
     if(ipcode===ipcode_cached) {
         setTimeout(getUser(typeList), 100)
+        x += 1
         return
     }
     fetch(`http://localhost:8000/getipaccount?ipcode=${ipcode}`)
         .then(getResponse => getResponse.json())
         .then(data => {
-            console.log("data: "+JSON.stringify(data))
             callback(data)
         })
 }
@@ -50,8 +46,19 @@ function getUser(callback) {
 
 
 
+// Fixed Authentication
+function getPassword(username, callback) {      // Gets the password, need the account name and the machine id. To get the password the machine must have been logged into the account 
+    fetch(`http://localhost:8000/getpassword?ipcode=${ipcode}&user=${username}`)
+        .then(getResponse => getResponse.json())
+        .then(data => {
+            callback(data)
+        })
+}
+
+
+
 // Safe inputs, SQL and XSS prevention        
-function safeInput(input) {
+function safeInput(input) {     
     let userinput = input.value
     if(userinput.includes(";") || userinput.includes("SELECT") || userinput.includes("FROM") || userinput.includes("WHERE")) { // Checks if any of these words or symbols were used inside of the input
         return [false, "SQL"]
@@ -66,7 +73,7 @@ function safeInput(input) {
 
 
 // Secure variables on the front end
-function getRandomInt(max) {
+function getRandomInt(max) {    // Used for getting random characters for the decoder
     return Math.floor(Math.random() * max);
 }
 
